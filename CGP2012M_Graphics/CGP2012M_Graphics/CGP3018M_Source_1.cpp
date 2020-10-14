@@ -104,13 +104,8 @@ int main(int argc, char *argv[]) {
 		//draw the triangles
 		//Use shader program we have compiled and linked
 		glUseProgram(shaderProgram);
-		glBindVertexArray(tri.VAO);
-		//set to wireframe so we can see the 2 triangles
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		//unbind (release) the VAO
-		glBindVertexArray(0);
+
+		tri.render();
 
 		SDL_GL_SwapWindow(win);
 
