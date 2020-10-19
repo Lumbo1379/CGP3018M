@@ -5,6 +5,7 @@
 //include shape, shader header files
 #include "Triangle.h"
 #include "ShaderClass.h"
+#include "KeyboardHandler.h"
 
 // // GLEW - OpenGL Extension Wrangler - http://glew.sourceforge.net/
 // // NOTE: include before SDL.h
@@ -27,7 +28,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+void input();
+void render();
 
+SDL_Event event;
+KeyboardHandler keyboardHandler;
+Triangle tri({0.0f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f});
+Triangle tri2({0.0f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f, -0.5f, 0.0f, 0.0f});
+GLuint shaderProgram;
+float r, g, b = 0;
+bool done = false;
+Shader vSh("..//..//Assets//Shaders//shader.vert");
+Shader fSh("..//..//Assets//Shaders//shader.frag");
 
 int main(int argc, char *argv[]) {
 	//SDL Initialise
@@ -54,15 +66,6 @@ int main(int argc, char *argv[]) {
 	glewExperimental = GL_TRUE;
 	GLenum err = glewInit();
 
-	//*****************************************************
-	//OpenGL specific data
-	//create objects
-	Triangle tri;
-
-	//create shaders
-	Shader vSh("..//..//Assets//Shaders//shader.vert");
-	Shader fSh("..//..//Assets//Shaders//shader.frag");
-
 	//create, allocate and compile shaders
 	//compile the shader code
 	//1 for vertex, 2 for fragment - there is probably a better way to do this
@@ -70,7 +73,6 @@ int main(int argc, char *argv[]) {
 	fSh.getShader(2);
 
 	//create shader program, attach shaders together in the shader program
-	GLuint shaderProgram;
 	shaderProgram = glCreateProgram();
 
 	glAttachShader(shaderProgram, vSh.shaderID);
@@ -84,47 +86,16 @@ int main(int argc, char *argv[]) {
 	//OpenGL buffers
 	//set buffers for the triangle
 	tri.setBuffers();
-
-	//***********************************************
-
-	SDL_Event event;
-	bool windowOpen = true;
+	tri2.setBuffers();
 
 	//*****************************
 	//'game' loop
-	while (windowOpen)
+	while (!done)
 	{
-
-		//****************************
-		// OpenGL calls.
-		
-		glClearColor(1.0f, 0.0f, 0.0f, 1);
-		glClear(GL_COLOR_BUFFER_BIT); 
-
-		//draw the triangles
-		//Use shader program we have compiled and linked
-		glUseProgram(shaderProgram);
-
-		tri.render();
+		input();
+		render();
 
 		SDL_GL_SwapWindow(win);
-
-
-		//*****************************
-		//SDL handled input
-		//Any input to the program is done here
-
-		while (windowOpen)
-		{
-			if (SDL_PollEvent(&event))
-			{
-				if (event.type == SDL_QUIT)
-				{
-					windowOpen = false;
-				}
-			}
-		}
-
 	}
 	//****************************
 	// Once finished with OpenGL functions, the SDL_GLContext can be deleted.
@@ -132,10 +103,53 @@ int main(int argc, char *argv[]) {
 
 	SDL_Quit();
 	return 0;
-
-
-
-
-
 }
+
+void input()
+{
+	while (SDL_PollEvent(&event))
+	{
+		keyboardHandler.handleKeyboardEvent(event); // Useful when capturing multiple keys pressed/held and then used for other single presses for consistency
+
+		if (event.type == SDL_QUIT)
+		{
+			done = true;
+		}
+		else if (event.type == SDL_KEYDOWN)
+		{
+			if (keyboardHandler.isPressed(SDLK_1))
+			{
+				r = 1;
+				g = 0;
+				b = 0;
+			}
+			else if (keyboardHandler.isPressed(SDLK_2))
+			{
+				r = 0.75;
+				g = 0;
+				b = 1;
+			}
+		}
+	}
+}
+
+void render()
+{
+	GLint loc = glGetUniformLocation(shaderProgram, "uTime");
+	if (loc != -1) // If found
+	{
+		glUniform1f(loc, SDL_GetTicks() / 1000.0f);
+	}
+	
+	glClearColor(r, g, b, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	//draw the triangles
+	//Use shader program we have compiled and linked
+	glUseProgram(shaderProgram);
+
+	tri.render();
+	tri2.render();
+}
+
 #endif

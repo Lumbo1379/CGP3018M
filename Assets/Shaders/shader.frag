@@ -1,7 +1,9 @@
 #version 440 core
+
+uniform float uTime;
 out vec4 colour;
 
 void main()
 {
-	colour = vec4(0.0f, 0.3f, 0.5f, 1.0f);
+	colour = vec4(float(sin(uTime)) * 0.5 + 0.5, float(cos(uTime)) * 0.5 + 0.5, float(cos(uTime)) + 0.5, 1.0);
 }
